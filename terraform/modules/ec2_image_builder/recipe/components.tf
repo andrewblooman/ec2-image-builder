@@ -31,36 +31,31 @@ resource "aws_imagebuilder_component" "install_cloudwatch_agent" {
   version     = "1.0.0"
   description = "Install and configure CloudWatch Agent on Amazon Linux 2023"
 
+  # Use 'yaml' instead of 'data'
   data = <<EOF
-name: install-cloudwatch-agent
-version: 1.0.0
-description: Install and configure CloudWatch Agent
 schemaVersion: 1.0
-
+name: "install-cloudwatch-agent"
+version: "1.0.0"
+description: "Install and configure CloudWatch Agent"
 phases:
-  build:
-    commands:
-      - echo "Installing CloudWatch Agent"
-      
-      # Update package list and install CloudWatch agent (using dnf for Amazon Linux 2023)
-      - dnf update -y
-      - dnf install -y amazon-cloudwatch-agent
-
-      # Enable and start CloudWatch Agent service
-      - systemctl enable amazon-cloudwatch-agent
-      - systemctl start amazon-cloudwatch-agent
-
-      # CloudWatch Agent Configuration (example for logs)
-      - echo "[general]" > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
-      - echo "state_file = /var/lib/amazon-cloudwatch-agent/agent-state" >> /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
-      - echo "[/var/log/messages]" >> /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
-      - echo "log_group_name = /var/log/messages" >> /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
-      - echo "log_stream_name = {instance_id}" >> /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
-      - echo "file = /var/log/messages" >> /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
-
-      # Restart CloudWatch Agent service to apply configuration
-      - systemctl restart amazon-cloudwatch-agent
-
-      - echo "CloudWatch Agent Installation and Configuration Complete"
+  - name: build
+    steps:
+      - name: InstallCloudWatchAgent
+        action: ExecuteBash
+        inputs:
+          commands:
+            - echo "Installing CloudWatch Agent"
+            - dnf update -y
+            - dnf install -y amazon-cloudwatch-agent
+            - systemctl enable amazon-cloudwatch-agent
+            - systemctl start amazon-cloudwatch-agent
+            - echo "[general]" > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+            - echo "state_file = /var/lib/amazon-cloudwatch-agent/agent-state" >> /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+            - echo "[/var/log/messages]" >> /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+            - echo "log_group_name = /var/log/messages" >> /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+            - echo "log_stream_name = {instance_id}" >> /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+            - echo "file = /var/log/messages" >> /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+            - systemctl restart amazon-cloudwatch-agent
+            - echo "CloudWatch Agent Installation and Configuration Complete"
 EOF
 }
